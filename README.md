@@ -29,6 +29,9 @@ python3 scripts/build_index.py     # 生成索引，无输出即成功
 
 打开 `INDEX.md` 开始。**没有依赖要装，没有数据库，不联网**，有 `python3` 就能跑。
 
+> Windows 上通常没有 `python3` 这个名字，用 `py -3 scripts/build_index.py` 代替；`.claude/hooks/` 里的 Hook 会自动探测 `python3 / python / py -3`，不用改。
+> 装完想确认一切正常：把 [VERIFY.md](VERIFY.md) 第一节整段丢给 AI 跑一遍。
+
 写第一篇笔记：
 
 ```bash

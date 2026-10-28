@@ -138,6 +138,7 @@ grep -ri 关键词 . --include='*.md' | grep -v '/\.git/'
 ```bash
 # ① 跑通，且确认没有笔记被落下
 python3 scripts/build_index.py; echo "exit=$?"
+#    Windows 上没有 python3 时用 py -3，下同
 
 # ② 幂等：重复跑逐字节一致
 md5sum INDEX.md CATEGORIES.md TAGS.md TIMELINE.md search.html feed.xml \

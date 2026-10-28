@@ -25,8 +25,35 @@ flag="$root/.claude/.pending_hook_fired"
 # 文件不存在，视为空
 [ -f "$pending" ] || exit 0
 
-# 剥掉 HTML 注释和空行后还有内容，才算真的有东西要处理
-body=$(sed -e '/<!--/,/-->/d' "$pending" | grep -v '^[[:space:]]*$' || true)
+# 剥掉 HTML 注释和空行后还有内容，才算真的有东西要处理。
+# 纯 bash 实现，不调 sed / grep——Windows 的 Git Bash 上不一定有这两个命令。
+body=""
+in_comment=0
+while IFS= read -r line || [ -n "$line" ]; do
+    if [ "$in_comment" -eq 1 ]; then
+        case "$line" in
+            *"-->"*) in_comment=0; line="${line#*-->}" ;;
+            *) continue ;;
+        esac
+    fi
+    while :; do
+        case "$line" in
+            *"<!--"*)
+                pre="${line%%<!--*}"
+                rest="${line#*<!--}"
+                case "$rest" in
+                    *"-->"*) line="$pre${rest#*-->}" ;;
+                    *) line="$pre"; in_comment=1; break ;;
+                esac
+                ;;
+            *) break ;;
+        esac
+    done
+    case "$line" in
+        *[![:space:]]*) body="${body}${line}"$'\n' ;;
+    esac
+done < "$pending"
+
 [ -z "$body" ] && exit 0
 
 touch "$flag"

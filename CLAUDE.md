@@ -29,6 +29,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 python3 scripts/build_index.py    # 重建全部索引产物（通常不必，Stop Hook 会自动跑）
 ```
 
+Windows 上解释器一般叫 `py -3`，把上面的 `python3` 换掉即可。`.claude/hooks/` 里的两个 Hook 已内置 `python3 → python → py -3` 的探测，不需要改。
+
 `.claude/settings.json` 里注册了**两个** Stop Hook，每轮会话结束时都跑：
 
 - `hooks/rebuild-index.sh` — 重建索引。成功时完全静默，失败时以退出码 2 抛错。

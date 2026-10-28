@@ -13,7 +13,20 @@ set -uo pipefail
 root="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 cd "$root" || exit 0
 
-if ! out=$(python3 scripts/build_index.py 2>&1); then
+# 找可用的 Python：Linux / macOS 与多数发行版是 python3，
+# Windows 上（Git Bash / Claude Code）常见的是 python 或 py -3。
+if command -v python3 >/dev/null 2>&1; then
+    PY=(python3)
+elif command -v python >/dev/null 2>&1; then
+    PY=(python)
+elif command -v py >/dev/null 2>&1; then
+    PY=(py -3)
+else
+    echo "索引重建失败：PATH 里找不到 python3 / python / py -3" >&2
+    exit 2
+fi
+
+if ! out=$("${PY[@]}" scripts/build_index.py 2>&1); then
     echo "索引重建失败（scripts/build_index.py）：" >&2
     echo "$out" >&2
     exit 2

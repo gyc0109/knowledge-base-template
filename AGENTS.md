@@ -63,8 +63,11 @@ grep -ril "关键词" --include='*.md' . | grep -v '/\.git/'
 
 ## 没有 Claude Code 的机器
 
-`.claude/hooks/*.sh` 只有在 Claude Code 里才会自动触发。其他环境按需手动跑：
+`.claude/hooks/*.sh` 只有在 Claude Code 里才会自动触发。其他环境按需手动重建索引，先探测解释器（Windows 上一般是 `py -3`）：
 
 ```bash
-python3 scripts/build_index.py
+if command -v python3 >/dev/null 2>&1; then PY=python3
+elif command -v python >/dev/null 2>&1; then PY=python
+else PY="py -3"; fi
+$PY scripts/build_index.py
 ```
