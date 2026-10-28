@@ -24,7 +24,7 @@ knowledge-base/
 
 **不拷**：`INDEX.md` / `CATEGORIES.md` / `TAGS.md` / `TIMELINE.md` / `search.html` / `feed.xml` / `related.json` / `backlinks.json`（首次运行就生成）、`scripts/__pycache__/`、`.claude/settings.local.json`（本机权限，含绝对路径）。
 
-**可选**：`scripts/report.py`（周报）与 `.gitattributes`（CSV 换行）。不做周报就整个不拷，与核心流程无关。
+**周报之类的一次性报表不做**——它们是回顾用的产物，每轮生成既没意义也会覆盖，需要时用 `git log` 或临时脚本另做，不要往核心流程里加。
 
 **新增任何仓库根的手写文件（如 `CHANGELOG.md`），必须加进 `build_index.py` 顶部的 `HANDWRITTEN`**，否则会被当成没有 frontmatter 的笔记收进索引。
 

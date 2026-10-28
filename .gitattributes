@@ -1,4 +1,0 @@
-# CSV 用 CRLF（Excel 兼容），但入库时归一化，避免每次检出都产生 diff。
-# 依据：Python csv 模块写出 CRLF，Excel 读 CRLF；git 若原样存 CRLF，
-# 跨平台协作时会反复出现「文件在本地被修改」的假 diff。
-*.csv text eol=crlf

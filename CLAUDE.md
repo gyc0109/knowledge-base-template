@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 个人技术知识库，**不是软件项目**。内容是 Markdown 笔记（日常技术问题 + 查证结论），组织形态对齐技术博客（分类 / 标签 / 时间线），frontmatter 字段名对齐 VanBlog 以便日后直接导入发布。
 
-没有构建、依赖安装和测试框架，全部逻辑就是 `scripts/` 下两个纯标准库脚本（`build_index.py` 生成索引、`report.py` 生成周报）。已启用 git（分支 `main`）。
+没有构建、依赖安装和测试框架，全部逻辑就是 `scripts/build_index.py` 一个纯标准库脚本。已启用 git（分支 `main`）。
 
 **换机器重建时看 `SPEC.md`**——它是这套库的轻量规范（最小文件集 + 笔记格式 + 「提问→归档→再问直接答」两条路径 + 验收自检）。本文是行为约定，`SPEC.md` 是提炼版；改动字段名、目录规则、hook 行为这类核心约定时要同步。
 
@@ -25,8 +25,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 python3 scripts/build_index.py    # 重建全部索引产物（通常不必，Stop Hook 会自动跑）
-python3 scripts/report.py         # 生成周报到 reports/（Stop Hook 不跑这个，需手动或按需）
-python3 scripts/report.py --print # 同上，额外把 MD 打到终端
 ```
 
 `.claude/settings.json` 里注册了**两个** Stop Hook，每轮会话结束时都跑：
@@ -34,18 +32,13 @@ python3 scripts/report.py --print # 同上，额外把 MD 打到终端
 - `hooks/rebuild-index.sh` — 重建索引。成功时完全静默，失败时以退出码 2 抛错。
 - `hooks/archive-pending.sh` — 检查归档暂存区。`pending_archive.md` 非空就以退出码 2 把内容顶回对话，**只检测不归档**（语义判断只有模型能做）。靠 `.claude/.pending_hook_fired` 标记防循环：同一会话只升级一次，模型清空暂存区时须一并删掉这个标记文件。
 
-`report.py` **不挂在 hook 上**——周报是回顾上周的产物，每轮会话都生成既没意义也会覆盖。需求触发时手动跑。
-
 **若改了笔记但索引没自动更新**，说明 hook 没被加载（配置监听只在会话启动时就存在该文件的目录上生效）。打开一次 `/hooks` 菜单或重启会话即可加载；在此之前只能手工跑脚本。
 
 ## 架构
 
-**两个脚本，一条依赖线**：`report.py` 从 `build_index.py` import `collect_notes` / `sort_notes` / `build_backlinks`（用 `sys.path.insert` 定位，因为两者是同级脚本而非包）。所以**改笔记字段结构时 `build_index.py` 是唯一源头**，`report.py` 自动跟随；反过来不成立。
+**一个脚本，一条数据流**：`build_index.py` 扫描全部笔记的 frontmatter，渲染出所有索引产物。改笔记字段结构时它是唯一源头。
 
 - `scripts/build_index.py` — 扫描 frontmatter，渲染索引页 + 搜索页 + 订阅源 + 关系索引。全部生成物走 `write_if_changed()`，内容没变就不写文件（避免 Stop Hook 每轮刷新 mtime）。
-- `scripts/report.py` — 周报。按 `date.today()` 推算**上一个自然周**（周一到周日），渲染 HTML 展示 + MD 留档到 `reports/<ISO周>.*`，同时写 JSON / CSV 导出。`reports/index.html` 始终是最新一周的副本。
-
-**周报里的链接必须带 `../` 前缀**（`report.py` 顶部的 `LINK_PREFIX`）。笔记路径是仓库根相对的（`tech/network/x.md`），而周报产物落在 `reports/` 下，直接写会被浏览器解析成 `reports/tech/...`——存在这样的文件才不报错，所以链接看起来是好的，点进去 404。JSON / CSV 是数据不是链接，保持原样。
 
 没有数据库、没有服务、不联网。
 
@@ -61,11 +54,8 @@ python3 scripts/report.py --print # 同上，额外把 MD 打到终端
 | `feed.xml` | build_index | Atom 订阅源 |
 | `related.json` | build_index | 标签共现算出的相关笔记 |
 | `backlinks.json` | build_index | 解析正文 `[x](y.md)` 得到的反向链接 |
-| `reports/*.html` `*.md` `*.json` `*.csv` | report | 周报及其导出 |
 
-`report.py` 的写文件**没有**走 `write_if_changed()`，每轮都会重写——它不在 hook 链上，这是有意的。
-
-手写文件：`README.md`、`ABOUT.md`、`TEMPLATE.md`、`CLAUDE.md`、`SPEC.md`，以及各分类目录下的笔记。
+手写文件：`README.md`、`ABOUT.md`、`TEMPLATE.md`、`CLAUDE.md`、`SPEC.md`、`AGENTS.md`，以及各分类目录下的笔记。
 
 脚本靠顶部的 `HANDWRITTEN` / `GENERATED` 两个集合，外加跳过 `scripts/`、`reports/`、点目录，以及内含 `.git` 的子目录，来区分笔记与其他文件。**新增手写文件（如 `CHANGELOG.md`）必须加进 `HANDWRITTEN`**，否则会被当成笔记收进索引。`HANDWRITTEN` 和克隆副本的判定都有反直觉的地方，见下一节。
 
@@ -94,9 +84,9 @@ python3 scripts/report.py --print # 同上，额外把 MD 打到终端
 
 ### `HANDWRITTEN` 按**文件名**匹配，任意层级生效
 
-`path.name in HANDWRITTEN` 不带路径，所以**任何目录下**叫 `README.md` / `TEMPLATE.md` / `ABOUT.md` / `CLAUDE.md` 的文件都不进索引——专项目录里的 `README.md` 正是靠这条被跳过的。
+`path.name in HANDWRITTEN` 不带路径，所以**任何目录下**叫 `README.md` / `TEMPLATE.md` / `ABOUT.md` / `CLAUDE.md` / `SPEC.md` / `AGENTS.md` 的文件都不进索引——专项目录里的 `README.md` 正是靠这条被跳过的。
 
-副作用要记住：**在分类目录里写一篇命名为 `README.md` 的笔记会被静默忽略**，没有 ⚠️、没有 stderr 提示，只是不在索引里。笔记一律用 `YYYY-MM-DD-标题.md` 命名，别用这四个名字。
+副作用要记住：**在分类目录里写一篇命名为 `README.md` 的笔记会被静默忽略**，没有 ⚠️、没有 stderr 提示，只是不在索引里。笔记一律用 `YYYY-MM-DD-标题.md` 命名，别用这几个名字。
 
 ### 分类深度
 
@@ -169,7 +159,7 @@ python3 scripts/report.py --print # 同上，额外把 MD 打到终端
 
 这类「同一大类下的不同侧面」该分篇，各自正文里写一条相对路径链接指回对方。同大类 ≠ 同主题，别顺手并成一篇。
 
-**合并已有笔记时**：保留内容更全的那篇的**文件名和 `date`**（不要重命名——改了会断掉已有 git 历史和外部链接），把另一篇的章节并进去、补上交叉链接，`date` 保持不变是有意的：它记录的是主题首次成文的日期，时间线和周报靠它排序。
+**合并已有笔记时**：保留内容更全的那篇的**文件名和 `date`**（不要重命名——改了会断掉已有 git 历史和外部链接），把另一篇的章节并进去、补上交叉链接，`date` 保持不变是有意的：它记录的是主题首次成文的日期，时间线靠它排序。
 
 **什么时候必须问**（命中任意一条就停下来问，不要自己判断）：
 
@@ -203,21 +193,16 @@ python3 scripts/report.py --print # 同上，额外把 MD 打到终端
 ```bash
 # 1. 跑通
 python3 scripts/build_index.py; echo "exit=$?"
-python3 scripts/report.py;      echo "exit=$?"
 
 # 2. 幂等（同一天重复跑输出必须逐字节一致）
 md5sum INDEX.md CATEGORIES.md TAGS.md TIMELINE.md search.html feed.xml \
        related.json backlinks.json > /tmp/index.md5
 python3 scripts/build_index.py && md5sum -c /tmp/index.md5
 
-# 3. 周报幂等
-md5sum reports/*.html reports/*.md > /tmp/report.md5
-python3 scripts/report.py && md5sum -c /tmp/report.md5
-
-# 4. hook 三态：暂存区空应 exit 0，有内容应 exit 2，标记文件存在应 exit 0
+# 3. hook 三态：暂存区空应 exit 0，有内容应 exit 2，标记文件存在应 exit 0
 bash .claude/hooks/archive-pending.sh; echo "exit=$?"
 
-# 5. 边界：造临时笔记覆盖「无 frontmatter」「category 与目录不符」「空 tags」「单级 category」，
+# 4. 边界：造临时笔记覆盖「无 frontmatter」「category 与目录不符」「空 tags」「单级 category」，
 #    确认都能进索引、该标 ⚠️ 的标上、stderr 有说明，跑完删掉临时文件并重跑
 ```
 
@@ -245,7 +230,5 @@ for p in root.rglob('*.md'):
             print(f'{p.relative_to(root)} -> {u}')
 EOF
 ```
-
-**周报的时间敏感性**：`report.py` 内部用 `date.today()` 推算「上周」，没有 `--date` 参数。跨周边界（比如周日深夜调试）重跑会生成新的一周，旧的那份不会自动删——这是留档设计，不是 bug。
 
 `scripts/__pycache__/` 是 `import` 脚本时产生的（直接执行不会），可以删。
