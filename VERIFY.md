@@ -73,6 +73,9 @@ bad = [n['path'] for n in notes if n['path'].rsplit('/', 1)[-1] in
        ("AGENTS.md", "CLAUDE.md", "SPEC.md", "README.md", "TEMPLATE.md",
         "ABOUT.md", "VERIFY.md")]
 print("手写文档被误收:", bad or "无")
+import re, pathlib
+idx = pathlib.Path("INDEX.md").read_text(encoding="utf-8")
+print("索引链接用 / 而非反斜杠:", not re.search(r"\]\([^)]*\\", idx))
 EOF
 
 6) Stop Hook 三态（测完恢复原状）
@@ -93,7 +96,7 @@ kw = "示例"
 docs = {"README.md", "CLAUDE.md", "SPEC.md", "TEMPLATE.md", "ABOUT.md",
         "AGENTS.md", "VERIFY.md", "INDEX.md", "CATEGORIES.md",
         "TAGS.md", "TIMELINE.md"}
-hits = [str(p) for p in pathlib.Path('.').rglob('*.md')
+hits = [p.as_posix() for p in pathlib.Path('.').rglob('*.md')
         if '.git' not in p.parts and p.name not in docs
         and kw in p.read_text(encoding='utf-8', errors='ignore')]
 print("命中笔记:", hits[:5] or "无（库里还没有笔记，属正常）")
