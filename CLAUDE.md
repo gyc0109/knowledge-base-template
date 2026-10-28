@@ -10,6 +10,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **换机器重建时看 `SPEC.md`**——它是这套库的轻量规范（最小文件集 + 笔记格式 + 「提问→归档→再问直接答」两条路径 + 验收自检）。本文是行为约定，`SPEC.md` 是提炼版；改动字段名、目录规则、hook 行为这类核心约定时要同步。
 
+**`AGENTS.md` 是给非 Claude 工具（Codex / Cursor / Copilot 等）的入口**，内容是同一套规则的压缩版。改规则时两边一起改。
+
 ## 讲解约定
 
 这个库的用途是回答用户的技术问题并把答案沉淀下来，所以**讲解方式本身就是产出物的一部分**：
