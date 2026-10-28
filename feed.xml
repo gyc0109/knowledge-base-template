@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>知识库</title>
+  <link href="."/>
+  <updated>2026-10-28T00:00:00Z</updated>
+  <id>knowledge-base</id>
+  <entry>
+    <title>示例笔记：这个文件演示笔记格式，写完第一篇后可以删掉</title>
+    <link href="tech/linux/2026-01-01-示例笔记-这个文件演示笔记格式.md"/>
+    <id>tech/linux/2026-01-01-示例笔记-这个文件演示笔记格式.md</id>
+    <updated>2026-01-01T00:00:00Z</updated>
+    <category term="tech/linux"/>
+    <summary>示例, 模板</summary>
+  </entry>
+</feed>

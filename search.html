@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>搜索 · 知识库</title>
+<style>
+:root { --bg: #fff; --fg: #1a1a2e; --muted: #6b7280; --border: #e5e7eb; --accent: #3b82f6; --accent-light: #eff6ff; }
+[data-theme="dark"] { --bg: #1a1a2e; --fg: #e5e7eb; --muted: #9ca3af; --border: #374151; --accent: #60a5fa; --accent-light: #1e3a5f; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif; background: var(--bg); color: var(--fg); padding: 2rem 1rem; }
+.container { max-width: 800px; margin: 0 auto; }
+h1 { font-size: 1.5rem; margin-bottom: 1rem; }
+input { width: 100%; padding: 0.75rem 1rem; font-size: 1rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--fg); margin-bottom: 1.5rem; }
+input:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
+.results { list-style: none; }
+.results li { padding: 0.75rem; border-bottom: 1px solid var(--border); }
+.results li:last-child { border-bottom: none; }
+.results a { color: var(--accent); text-decoration: none; font-weight: 500; }
+.results a:hover { text-decoration: underline; }
+.results .meta { color: var(--muted); font-size: 0.8125rem; margin-top: 0.25rem; }
+.results .snippet { color: var(--muted); font-size: 0.875rem; margin-top: 0.25rem; }
+.no-results { color: var(--muted); text-align: center; padding: 2rem; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>搜索知识库</h1>
+  <input type="text" id="q" placeholder="输入关键词搜索..." autofocus>
+  <ul class="results" id="results"></ul>
+</div>
+<script>
+const DATA = [{"title": "示例笔记：这个文件演示笔记格式，写完第一篇后可以删掉", "path": "tech/linux/2026-01-01-示例笔记-这个文件演示笔记格式.md", "date": "2026-01-01", "category": "tech/linux", "tags": ["示例", "模板"], "content": "## 问题\n\n这里写原始疑问，连同当时的上下文：什么场景下遇到的、已经试过什么、报错原文是什么。\n\n写具体些。半年后回看时，「当时为什么觉得这是个问题」往往比结论更需要上下文。\n\n## 结论\n\n一句话答案。没搞清楚就先写「暂无」，把 `status` 留在 `open`——它会自动挂到 `INDEX.md` 的待解决区，当作待办用。\n\n## 详细分析\n\n推理过程、验证步骤、关键命令、踩过的坑，都在"}];
+const q = document.getElementById('q');
+const results = document.getElementById('results');
+function search() {
+  const term = q.value.toLowerCase().trim();
+  if (!term) { results.innerHTML = ''; return; }
+  const matched = DATA.filter(n =>
+    n.title.toLowerCase().includes(term) ||
+    n.tags.some(t => t.toLowerCase().includes(term)) ||
+    n.content.toLowerCase().includes(term)
+  );
+  if (matched.length === 0) {
+    results.innerHTML = '<li class="no-results">没有匹配的笔记</li>';
+    return;
+  }
+  results.innerHTML = matched.map(n => {
+    const title = n.title.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const category = (n.category || '—').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const tags = n.tags.map(t => '#' + t).join(' ');
+    const snippet = n.content.slice(0, 100).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return `
+    <li>
+      <a href="${n.path}">${title}</a>
+      <div class="meta">${n.date} · ${category} · ${tags}</div>
+      <div class="snippet">${snippet}...</div>
+    </li>`;
+  }).join('');
+}
+q.addEventListener('input', search);
+</script>
+</body>
+</html>
