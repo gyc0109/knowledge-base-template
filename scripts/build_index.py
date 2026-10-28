@@ -61,7 +61,7 @@ F_STATUS = "status"
 REQUIRED = (F_TITLE, F_DATE, F_CATEGORY, F_STATUS)
 
 # 手写的文件，不参与索引
-HANDWRITTEN = {"README.md", "TEMPLATE.md", "ABOUT.md", "CLAUDE.md", "SPEC.md", "AGENTS.md"}
+HANDWRITTEN = {"README.md", "TEMPLATE.md", "ABOUT.md", "CLAUDE.md", "SPEC.md", "AGENTS.md", "VERIFY.md"}
 # 本脚本的生成物，不当作笔记
 GENERATED = {
     "INDEX.md", "CATEGORIES.md", "TAGS.md", "TIMELINE.md",

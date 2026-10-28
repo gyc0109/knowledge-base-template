@@ -14,6 +14,7 @@
 - **[AGENTS.md](AGENTS.md)** —— 给所有 AI 的入口：查库顺序、写笔记规则、什么该问、什么不能做
 - **[CLAUDE.md](CLAUDE.md)** —— Claude Code 的行为约定，里面是同一套规则的完整版
 - **[SPEC.md](SPEC.md)** —— 这套库的规范，换机器重建照它做
+- **[VERIFY.md](VERIFY.md)** —— 装完后丢给 AI 的验收提示词，逐项自检并给出结论
 
 Claude Code 会自动读 `CLAUDE.md` 并加载 `.claude/` 下的 Hook（会话结束自动重建索引）。其他工具读 `AGENTS.md`，索引需要手动重建。
 

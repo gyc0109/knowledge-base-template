@@ -57,7 +57,7 @@ python3 scripts/build_index.py    # 重建全部索引产物（通常不必，St
 | `related.json` | build_index | 标签共现算出的相关笔记 |
 | `backlinks.json` | build_index | 解析正文 `[x](y.md)` 得到的反向链接 |
 
-手写文件：`README.md`、`ABOUT.md`、`TEMPLATE.md`、`CLAUDE.md`、`SPEC.md`、`AGENTS.md`，以及各分类目录下的笔记。
+手写文件：`README.md`、`ABOUT.md`、`TEMPLATE.md`、`CLAUDE.md`、`SPEC.md`、`AGENTS.md`、`VERIFY.md`，以及各分类目录下的笔记。
 
 脚本靠顶部的 `HANDWRITTEN` / `GENERATED` 两个集合，外加跳过 `scripts/`、`reports/`、点目录，以及内含 `.git` 的子目录，来区分笔记与其他文件。**新增手写文件（如 `CHANGELOG.md`）必须加进 `HANDWRITTEN`**，否则会被当成笔记收进索引。`HANDWRITTEN` 和克隆副本的判定都有反直觉的地方，见下一节。
 
@@ -86,7 +86,7 @@ python3 scripts/build_index.py    # 重建全部索引产物（通常不必，St
 
 ### `HANDWRITTEN` 按**文件名**匹配，任意层级生效
 
-`path.name in HANDWRITTEN` 不带路径，所以**任何目录下**叫 `README.md` / `TEMPLATE.md` / `ABOUT.md` / `CLAUDE.md` / `SPEC.md` / `AGENTS.md` 的文件都不进索引——专项目录里的 `README.md` 正是靠这条被跳过的。
+`path.name in HANDWRITTEN` 不带路径，所以**任何目录下**叫 `README.md` / `TEMPLATE.md` / `ABOUT.md` / `CLAUDE.md` / `SPEC.md` / `AGENTS.md` / `VERIFY.md` 的文件都不进索引——专项目录里的 `README.md` 正是靠这条被跳过的。
 
 副作用要记住：**在分类目录里写一篇命名为 `README.md` 的笔记会被静默忽略**，没有 ⚠️、没有 stderr 提示，只是不在索引里。笔记一律用 `YYYY-MM-DD-标题.md` 命名，别用这几个名字。
 
